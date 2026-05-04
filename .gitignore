@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+kk.txt 
+# Logs and runtime data
+# logs/
+# *.log
+
+# Media outputs
+# images/
+# videos/
+
+# OS files
+.DS_Store
+
+# Editor settings
+.vscode/
+
+# Environment files
+.env
+.env.*
+
+# Test/coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Build artifacts
+build/
+dist/
+
+
+final

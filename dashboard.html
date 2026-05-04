@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EdgeGuard — Security Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap"
+    rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* ═══ THEME TOKENS ═══ */
+    :root,
+    [data-theme="dark"] {
+      --bg: #050709;
+      --surface: #0b0e13;
+      --s2: #111620;
+      --s3: #171d28;
+      --bd: rgba(255, 255, 255, .07);
+      --bd2: rgba(255, 255, 255, .13);
+      --tx: #cdd5e0;
+      --muted: #4a5568;
+      --accent: #00f5b4;
+      --danger: #ff4060;
+      --warn: #ffb020;
+      --info: #5eaaff;
+      --mesh1: rgba(0, 245, 180, .10);
+      --mesh2: rgba(94, 170, 255, .09);
+      --mesh3: rgba(255, 64, 96, .06);
+      --scan: rgba(0, 0, 0, .03);
+      --sb-thumb: rgba(255, 255, 255, .10);
+      --shadow: rgba(0, 0, 0, .6);
+    }
+
+    [data-theme="light"] {
+      --bg: #f0f4f8;
+      --surface: #ffffff;
+      --s2: #f7f9fc;
+      --s3: #eef2f7;
+      --bd: rgba(0, 0, 0, .08);
+      --bd2: rgba(0, 0, 0, .14);
+      --tx: #1a202c;
+      --muted: #8896b0;
+      --accent: #00b884;
+      --danger: #e03050;
+      --warn: #d08000;
+      --info: #2a7dd8;
+      --mesh1: rgba(0, 184, 132, .07);
+      --mesh2: rgba(42, 125, 216, .06);
+      --mesh3: rgba(224, 48, 80, .04);
+      --scan: rgba(0, 0, 0, .015);
+      --sb-thumb: rgba(0, 0, 0, .15);
+      --shadow: rgba(0, 0, 0, .12);
+    }
+
+    /* ═══ BASE ═══ */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      transition: background-color .25s, border-color .25s, color .15s;
+    }
+
+    html,
+    body {
+      height: 100%;
+      background: var(--bg);
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      pointer-events: none;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, var(--scan) 2px, var(--scan) 4px);
+    }
+
+    .mesh {
+      background:
+        radial-gradient(900px 500px at 75% -10%, var(--mesh1) 0%, transparent 60%),
+        radial-gradient(700px 500px at -5% 10%, var(--mesh2) 0%, transparent 55%),
+        radial-gradient(400px 300px at 50% 100%, var(--mesh3) 0%, transparent 60%);
+    }
+
+    /* ═══ SCROLLBAR ═══ */
+    ::-webkit-scrollbar {
+      width: 3px;
+      height: 3px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--sb-thumb);
+      border-radius: 2px;
+    }
+
+    /* ═══ SEMANTIC HELPERS (used instead of Tailwind color classes) ═══ */
+    .bg-bg {
+      background-color: var(--bg);
+    }
+
+    .bg-surface {
+      background-color: var(--surface);
+    }
+
+    .bg-s2 {
+      background-color: var(--s2);
+    }
+
+    .bg-s3 {
+      background-color: var(--s3);
+    }
+
+    .text-tx {
+      color: var(--tx);
+    }
+
+    .text-muted {
+      color: var(--muted);
+    }
+
+    .text-accent {
+      color: var(--accent);
+    }
+
+    .text-danger {
+      color: var(--danger);
+    }
+
+    .text-warn {
+      color: var(--warn);
+    }
+
+    .text-info {
+      color: var(--info);
+    }
+
+    .border-bd {
+      border-color: var(--bd);
+    }
+
+    .border-bd2 {
+      border-color: var(--bd2);
+    }
+
+    /* stat underline helpers */
+    .ul-accent {
+      background-color: var(--accent) !important;
+    }
+
+    .ul-danger {
+      background-color: var(--danger) !important;
+    }
+
+    .ul-cam {
+      background-color: var(--accent) !important;
+    }
+
+    /* surface/hover combos */
+    .hover-s2:hover {
+      background-color: var(--s2);
+    }
+
+    .hover-s3:hover {
+      background-color: var(--s3);
+    }
+
+    /* ═══ ARM BUTTON STATES ═══ */
+    .btn-armed {
+      border-color: color-mix(in srgb, var(--accent) 40%, transparent) !important;
+      background-color: color-mix(in srgb, var(--accent) 12%, transparent) !important;
+      color: var(--accent) !important;
+    }
+
+    .btn-disarmed {
+      border-color: color-mix(in srgb, var(--danger) 40%, transparent) !important;
+      background-color: color-mix(in srgb, var(--danger) 12%, transparent) !important;
+      color: var(--danger) !important;
+    }
+
+    /* ═══ CARDS / SURFACES ═══ */
+    .card {
+      background-color: var(--s2);
+      border-color: var(--bd);
+    }
+
+    .card2 {
+      background-color: var(--s2);
+      border-color: var(--bd2);
+    }
+
+    /* ═══ QUICK ACTION BUTTONS ═══ */
+    .qa-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .5rem;
+      padding: .75rem;
+      border-radius: .75rem;
+      border: 1px solid var(--bd2);
+      background-color: var(--s2);
+      transition: background .2s, border-color .2s;
+    }
+
+    .qa-btn:hover {
+      background-color: var(--s3);
+    }
+
+    .qa-btn svg {
+      color: var(--muted);
+      transition: color .2s;
+    }
+
+    .qa-btn:hover.qa-accent svg {
+      color: var(--accent);
+    }
+
+    .qa-btn:hover.qa-info svg {
+      color: var(--info);
+    }
+
+    .qa-btn:hover.qa-danger svg {
+      color: var(--danger);
+    }
+
+    .qa-btn span {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      transition: color .2s;
+    }
+
+    .qa-btn:hover span {
+      color: var(--tx);
+    }
+
+    /* ═══ EVENTS ═══ */
+    .ev-motion {
+      background-color: color-mix(in srgb, var(--danger) 10%, transparent);
+      border-color: color-mix(in srgb, var(--danger) 20%, transparent);
+    }
+
+    .ev-auth {
+      background-color: color-mix(in srgb, var(--warn) 10%, transparent);
+      border-color: color-mix(in srgb, var(--warn) 20%, transparent);
+    }
+
+    .ev-ok {
+      background-color: color-mix(in srgb, var(--accent) 10%, transparent);
+      border-color: color-mix(in srgb, var(--accent) 20%, transparent);
+    }
+
+    .dot-motion {
+      background-color: var(--danger);
+    }
+
+    .dot-auth {
+      background-color: var(--warn);
+    }
+
+    .dot-ok {
+      background-color: var(--accent);
+    }
+
+    /* ═══ MEDIA CARDS ═══ */
+    .media-card {
+      background-color: var(--s2);
+      border-color: var(--bd2);
+    }
+
+    .media-card:hover img {
+      transform: scale(1.06);
+    }
+
+    .media-card img {
+      transition: transform .35s ease;
+    }
+
+    .zoom-hint {
+      opacity: 0;
+      transition: opacity .2s;
+    }
+
+    .media-card:hover .zoom-hint {
+      opacity: 1;
+    }
+
+    /* ═══ THEME TOGGLE BUTTON ═══ */
+    .theme-btn {
+      width: 2.25rem;
+      height: 2.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: .625rem;
+      border: 1px solid var(--bd2);
+      background-color: var(--s2);
+      color: var(--muted);
+      transition: all .2s;
+      cursor: pointer;
+    }
+
+    .theme-btn:hover {
+      color: var(--accent);
+      border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+      background-color: var(--s3);
+    }
+
+    /* ═══ MODALS ═══ */
+    .modal-bd {
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    .modal-card {
+      background-color: var(--surface);
+      border-color: var(--bd2);
+    }
+
+    .modal-body {
+      background-color: var(--s2);
+      border-color: var(--bd2);
+    }
+
+    .modal-btn {
+      padding: .45rem;
+      border-radius: .5rem;
+      border: 1px solid var(--bd2);
+      background-color: var(--s2);
+      color: var(--muted);
+      transition: all .2s;
+    }
+
+    .modal-btn:hover {
+      color: var(--accent);
+      border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+    }
+
+    .modal-btn-close:hover {
+      color: var(--danger) !important;
+      border-color: color-mix(in srgb, var(--danger) 35%, transparent) !important;
+    }
+
+    .modal-input {
+      background-color: var(--s2);
+      border-color: var(--bd2);
+      color: var(--tx);
+      border-radius: .5rem;
+      border-width: 1px;
+      padding: .375rem .75rem .375rem 1.75rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    .modal-input::placeholder {
+      color: var(--muted);
+    }
+
+    .modal-input:focus {
+      border-color: color-mix(in srgb, var(--accent) 50%, transparent);
+    }
+
+    /* ═══ HEADER ═══ */
+    .topbar {
+      background-color: color-mix(in srgb, var(--surface) 90%, transparent);
+      border-color: var(--bd);
+    }
+
+    .pill {
+      background-color: var(--s2);
+      border-color: var(--bd2);
+      color: var(--tx);
+    }
+
+    /* ═══ LOG PRE ═══ */
+    .log-pre {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      line-height: 1.6rem;
+      color: var(--muted);
+      padding: 1.25rem;
+      min-height: 120px;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* ═══ STATUS PILL ═══ */
+    .sysdot-on {
+      background-color: var(--accent);
+    }
+
+    .sysdot-off {
+      background-color: var(--danger);
+    }
+
+    /* ═══ TABS ═══ */
+    .tab-active {
+      background-color: var(--accent);
+      color: #000;
+    }
+
+    .tab-inactive {
+      color: var(--muted);
+    }
+
+    .tab-inactive:hover {
+      background-color: var(--s3);
+      color: var(--tx);
+    }
+
+    /* ═══ STAT STRIP ═══ */
+    .stat-cell {
+      border-color: var(--bd);
+    }
+
+    .stat-cell:hover {
+      background-color: color-mix(in srgb, var(--s2) 60%, transparent);
+    }
+
+    /* ═══ ANIMATIONS ═══ */
+    @keyframes pulse2 {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .25
+      }
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: 0
+      }
+    }
+
+    @keyframes fadein {
+      from {
+        opacity: 0;
+        transform: translateY(8px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    @keyframes zoomin {
+      from {
+        opacity: 0;
+        transform: scale(.94)
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1)
+      }
+    }
+
+    @keyframes spin {
+      from {
+        transform: rotate(0deg)
+      }
+
+      to {
+        transform: rotate(360deg)
+      }
+    }
+
+    .anim-pulse {
+      animation: pulse2 2s ease-in-out infinite;
+    }
+
+    .anim-blink {
+      animation: blink .9s step-end infinite;
+    }
+
+    .anim-fadein {
+      animation: fadein .4s ease-out both;
+    }
+
+    .anim-zoomin {
+      animation: zoomin .25s ease-out both;
+    }
+
+    .anim-spin {
+      animation: spin 1s linear infinite;
+    }
+
+    /* Light mode tweaks */
+    [data-theme="light"] .topbar {
+      box-shadow: 0 1px 0 var(--bd), 0 2px 12px rgba(0, 0, 0, .06);
+    }
+
+    [data-theme="light"] body::after {
+      display: none;
+    }
+
+    [data-theme="light"] #logbox,
+    [data-theme="light"] #full-logbox {
+      background-color: var(--s3);
+    }
+  </style>
+</head>
+
+<body class="bg-bg text-tx mesh min-h-screen overflow-x-hidden" style="font-family:'Syne',sans-serif">
+
+  <!-- ═══════════════════════════════════════
+     LIGHTBOX
+════════════════════════════════════════ -->
+  <div id="lightbox" class="modal-bd fixed inset-0 z-[200] bg-black/85 hidden items-center justify-center p-4 md:p-10">
+    <div class="relative max-w-5xl w-full anim-zoomin">
+      <button onclick="closeLightbox()"
+        class="absolute -top-11 right-0 w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/25 text-white transition z-10 font-mono text-base leading-none">✕</button>
+      <button id="lb-prev" onclick="lightboxNav(-1)"
+        class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-14 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white transition text-xl font-bold hidden md:flex items-center justify-center">‹</button>
+      <button id="lb-next" onclick="lightboxNav(1)"
+        class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-14 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white transition text-xl font-bold hidden md:flex items-center justify-center">›</button>
+      <img id="lb-img" src="" alt="" class="w-full max-h-[78vh] object-contain rounded-2xl shadow-2xl"
+        style="border:1px solid var(--bd2)">
+      <div class="flex items-center justify-between mt-3 px-1">
+        <span id="lb-label" class="text-muted" style="font-family:'JetBrains Mono',monospace;font-size:11px"></span>
+        <a id="lb-dl" download class="text-accent hover:underline flex items-center gap-1"
+          style="font-family:'JetBrains Mono',monospace;font-size:11px">
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>Download
+        </a>
+      </div>
+      <div id="lb-dots" class="flex justify-center gap-1.5 mt-2.5"></div>
+      <div class="flex justify-center gap-6 mt-3 md:hidden">
+        <button onclick="lightboxNav(-1)"
+          class="px-4 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs"
+          style="font-family:'JetBrains Mono',monospace">← Prev</button>
+        <button onclick="lightboxNav(1)" class="px-4 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs"
+          style="font-family:'JetBrains Mono',monospace">Next →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+     LOGS MODAL
+════════════════════════════════════════ -->
+  <div id="logs-modal"
+    class="modal-bd fixed inset-0 z-[200] bg-black/80 hidden items-center justify-center p-4 md:p-10">
+    <div class="relative w-full max-w-3xl anim-zoomin flex flex-col" style="max-height:85vh">
+      <!-- header -->
+      <div class="modal-card flex items-center justify-between px-5 py-4 rounded-t-2xl border border-b-0">
+        <div class="flex items-center gap-3">
+          <div class="w-7 h-7 rounded-lg bg-s2 flex items-center justify-center" style="border:1px solid var(--bd2)">
+            <svg class="w-3.5 h-3.5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+            </svg>
+          </div>
+          <div>
+            <div class="text-sm font-bold text-tx tracking-wide" style="font-family:'JetBrains Mono',monospace">System
+              Logs</div>
+            <div class="text-muted" id="logs-meta" style="font-family:'JetBrains Mono',monospace;font-size:10px">—</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="relative hidden sm:block">
+            <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-muted" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input id="log-search" oninput="filterLogs()" placeholder="search…" class="modal-input"
+              style="width:11rem;padding-left:1.75rem">
+          </div>
+          <button onclick="openLogsModal()" class="modal-btn" title="Refresh">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round">
+              <polyline points="23 4 23 10 17 10" />
+              <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
+            </svg>
+          </button>
+          <button onclick="copyLogs()" id="copy-btn" class="modal-btn" title="Copy">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" />
+              <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+            </svg>
+          </button>
+          <button onclick="closeLogsModal()" class="modal-btn modal-btn-close" title="Close">✕</button>
+        </div>
+      </div>
+      <!-- body -->
+      <div class="modal-body flex-1 overflow-y-auto border border-t-0 rounded-b-2xl">
+        <pre id="full-logbox" class="log-pre">loading…</pre>
+      </div>
+      <!-- footer -->
+      <div class="flex items-center justify-between pt-3 px-1">
+        <span id="log-line-count" class="text-muted"
+          style="font-family:'JetBrains Mono',monospace;font-size:10px"></span>
+        <span class="text-muted" style="font-family:'JetBrains Mono',monospace;font-size:10px">ESC to close</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+     TOPBAR
+════════════════════════════════════════ -->
+  <header class="topbar sticky top-0 z-30 flex items-center justify-between px-4 md:px-6 h-14 backdrop-blur border-b">
+    <div class="flex items-center gap-3">
+      <div class="relative w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+        style="border:1px solid color-mix(in srgb,var(--accent) 50%,transparent);box-shadow:0 0 16px color-mix(in srgb,var(--accent) 22%,transparent)">
+        <span class="w-2.5 h-2.5 rounded-full anim-pulse" style="background:var(--accent)"></span>
+        <span class="absolute w-[18px] h-[18px] rounded-full"
+          style="border:1px solid color-mix(in srgb,var(--accent) 25%,transparent)"></span>
+      </div>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;letter-spacing:2px"
+        class="text-tx">EDGE<span class="text-accent">GUARD</span></span>
+    </div>
+
+    <div class="flex items-center gap-2 md:gap-3">
+      <!-- status pill -->
+      <div class="pill flex items-center gap-2 px-3 py-1.5 rounded-full border"
+        style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.03em">
+        <span id="sysdot" class="w-1.5 h-1.5 rounded-full bg-muted transition" style="background:var(--muted)"></span>
+        <span id="syslabel" class="hidden sm:inline text-tx">checking…</span>
+      </div>
+      <span id="clock" class="text-muted hidden sm:block"
+        style="font-family:'JetBrains Mono',monospace;font-size:12px">—</span>
+
+      <!-- 🌙 / ☀️ THEME TOGGLE -->
+      <button class="theme-btn" onclick="toggleTheme()" id="theme-btn" title="Toggle theme">
+        <svg id="icon-dark" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round">
+          <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+        </svg>
+        <svg id="icon-light" class="w-4 h-4 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="5" />
+          <line x1="12" y1="1" x2="12" y2="3" />
+          <line x1="12" y1="21" x2="12" y2="23" />
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+          <line x1="1" y1="12" x2="3" y2="12" />
+          <line x1="21" y1="12" x2="23" y2="12" />
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+        </svg>
+      </button>
+
+      <!-- mobile menu -->
+      <button onclick="toggleSidebar()" class="theme-btn xl:hidden" title="Menu">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════
+     STAT STRIP
+════════════════════════════════════════ -->
+  <section style="display:grid;grid-template-columns:repeat(2,1fr);border-bottom:1px solid var(--bd)"
+    class="md:grid-cols-4-auto">
+    <style>
+      .md-4col {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      @media(min-width:768px) {
+        .md-4col {
+          grid-template-columns: repeat(4, 1fr);
+        }
+      }
+    </style>
+    <!-- using inline grid for theme compatibility -->
+  </section>
+  <div class="md-4col" style="border-bottom:1px solid var(--bd)">
+    <!-- System -->
+    <div class="stat-cell relative px-4 md:px-6 py-4 cursor-default" style="border-right:1px solid var(--bd)">
+      <div class="text-muted uppercase"
+        style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;margin-bottom:.5rem">System
+      </div>
+      <div id="s-system" class="text-muted"
+        style="font-family:'JetBrains Mono',monospace;font-size:1.25rem;font-weight:700">—</div>
+      <div id="ul-system" class="absolute bottom-0 left-0 right-0" style="height:2px"></div>
+    </div>
+    <!-- Camera -->
+    <div class="stat-cell relative px-4 md:px-6 py-4 cursor-default" style="border-right:1px solid var(--bd)">
+      <div class="text-muted uppercase"
+        style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;margin-bottom:.5rem">Camera
+      </div>
+      <div id="s-camera" class="text-muted"
+        style="font-family:'JetBrains Mono',monospace;font-size:1.25rem;font-weight:700">—</div>
+      <div id="ul-camera" class="absolute bottom-0 left-0 right-0" style="height:2px"></div>
+    </div>
+    <!-- Priority User -->
+    <div class="stat-cell relative px-4 md:px-6 py-4 cursor-default" style="border-right:1px solid var(--bd)">
+      <div class="text-muted uppercase"
+        style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;margin-bottom:.5rem">Priority
+        User</div>
+      <div id="s-user" class="text-info truncate"
+        style="font-family:'JetBrains Mono',monospace;font-size:.875rem;padding-top:.25rem">—</div>
+    </div>
+    <!-- Priority Level -->
+    <div class="stat-cell relative px-4 md:px-6 py-4 cursor-default">
+      <div class="text-muted uppercase"
+        style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;margin-bottom:.5rem">Priority
+        Level</div>
+      <div id="s-priority" class="text-warn"
+        style="font-family:'JetBrains Mono',monospace;font-size:1.25rem;font-weight:700">—</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+     MAIN LAYOUT
+════════════════════════════════════════ -->
+  <div class="flex flex-col xl:flex-row" style="min-height:calc(100vh - 7.5rem)">
+
+    <!-- ─────────── FEED PANEL ─────────── -->
+    <main class="flex-1 p-4 md:p-6 flex flex-col gap-5 min-w-0">
+
+      <!-- Live Feed label -->
+      <div class="flex items-center gap-3">
+        <span class="text-muted uppercase"
+          style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:2px">Live
+          Feed</span>
+        <span class="flex-1" style="height:1px;background:var(--bd)"></span>
+        <span id="stream-mode" class="text-accent"
+          style="font-family:'JetBrains Mono',monospace;font-size:9px;border:1px solid color-mix(in srgb,var(--accent) 20%,transparent);padding:.2rem .6rem;border-radius:999px;letter-spacing:.05em">WebRTC</span>
+        <button id="stream-toggle" onclick="toggleStreamMode()"
+          class="text-muted hover:text-accent transition"
+          style="font-family:'JetBrains Mono',monospace;font-size:9px;border:1px solid var(--bd);padding:.2rem .55rem;border-radius:999px;letter-spacing:.05em">Switch</button>
+        <div class="flex items-center gap-2" style="font-family:'JetBrains Mono',monospace;font-size:9px">
+          <button id="audio-toggle" onclick="toggleAudio()"
+            class="text-muted hover:text-accent transition"
+            style="border:1px solid var(--bd);padding:.2rem .55rem;border-radius:999px;letter-spacing:.05em">Audio</button>
+          <input id="audio-volume" type="range" min="0" max="1" step="0.05" value="0.6"
+            class="h-1.5 accent-[var(--info)]" style="width:90px">
+          <span id="audio-vol-label" class="text-muted" style="min-width:32px;text-align:right">60%</span>
+        </div>
+      </div>
+
+      <!-- Video -->
+      <div class="relative rounded-2xl overflow-hidden anim-fadein"
+        style="aspect-ratio:16/9;border:1px solid var(--bd2);background:var(--s2);box-shadow:0 0 40px var(--shadow)">
+        <video id="live" autoplay playsinline muted class="w-full h-full object-cover"></video>
+        <img id="live-mjpeg" alt="Live MJPEG" class="w-full h-full object-cover hidden" />
+        <div class="absolute inset-0 pointer-events-none"
+          style="background:linear-gradient(to bottom, rgba(0,0,0,.5) 0%, transparent 40%, rgba(0,0,0,.65) 100%)"></div>
+        <!-- REC badge -->
+        <div class="absolute top-3 left-3 flex items-center gap-1.5 text-white"
+          style="background:color-mix(in srgb,var(--danger) 90%,transparent);font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;padding:.25rem .6rem;border-radius:.375rem;letter-spacing:.1em">
+          <span class="w-1.5 h-1.5 rounded-full bg-white anim-blink"></span> LIVE
+        </div>
+        <div id="streamtime" class="absolute top-3 right-3 text-white/80"
+          style="font-family:'JetBrains Mono',monospace;font-size:11px;background:rgba(0,0,0,.6);padding:.25rem .6rem;border-radius:.375rem">
+          00:00:00</div>
+        <!-- placeholder -->
+        <div id="stream-ph" class="absolute inset-0 flex flex-col items-center justify-center gap-3">
+          <div class="w-16 h-16 rounded-2xl flex items-center justify-center"
+            style="border:1px solid var(--bd2);background:var(--s3)">
+            <svg class="w-7 h-7 text-muted opacity-50" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="1.5" stroke-linecap="round">
+              <path d="M23 7l-7 5 7 5V7z" />
+              <rect x="1" y="5" width="15" height="14" rx="2" />
+            </svg>
+          </div>
+          <p class="text-muted" style="font-family:'JetBrains Mono',monospace;font-size:12px">stream not available</p>
+        </div>
+      </div>
+
+      <!-- ARM / DISARM -->
+      <div class="grid grid-cols-2 gap-3">
+        <button id="btn-on" onclick="setSystem('on')"
+          class="flex items-center justify-center gap-2 rounded-xl transition"
+          style="padding:.75rem;border:1px solid var(--bd2);background:var(--s2);color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:.875rem;font-weight:700;letter-spacing:.1em">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          </svg>ARM
+        </button>
+        <button id="btn-off" onclick="setSystem('off')"
+          class="flex items-center justify-center gap-2 rounded-xl transition"
+          style="padding:.75rem;border:1px solid var(--bd2);background:var(--s2);color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:.875rem;font-weight:700;letter-spacing:.1em">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="10" y1="15" x2="10" y2="9" />
+            <line x1="14" y1="15" x2="14" y2="9" />
+          </svg>DISARM
+        </button>
+      </div>
+
+      <!-- Captures label -->
+      <div class="flex items-center gap-3 pt-1">
+        <span class="text-muted uppercase"
+          style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:2px">Intruder
+          Captures</span>
+        <span class="flex-1" style="height:1px;background:var(--bd)"></span>
+        <button onclick="loadMedia()" class="text-muted flex items-center gap-1.5 transition hover:text-accent"
+          style="font-family:'JetBrains Mono',monospace;font-size:11px">
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round">
+            <polyline points="23 4 23 10 17 10" />
+            <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
+          </svg>Refresh
+        </button>
+      </div>
+
+      <!-- Tabs -->
+      <div class="flex gap-1.5 p-1 rounded-xl" style="background:var(--s2);border:1px solid var(--bd)">
+        <button data-tab="images" onclick="switchTab('images',this)"
+          class="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg transition tab-active"
+          style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;letter-spacing:.05em">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <circle cx="8.5" cy="8.5" r="1.5" />
+            <polyline points="21 15 16 10 5 21" />
+          </svg>Images
+        </button>
+        <button data-tab="videos" onclick="switchTab('videos',this)"
+          class="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg transition tab-inactive"
+          style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;letter-spacing:.05em">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round">
+            <polygon points="23 7 16 12 23 17 23 7" />
+            <rect x="1" y="5" width="15" height="14" rx="2" />
+          </svg>Videos
+        </button>
+      </div>
+
+      <!-- Media grid -->
+      <div id="media-container" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
+        <div class="col-span-full flex flex-col items-center justify-center gap-3 py-12 text-muted">
+          <svg class="w-10 h-10 opacity-25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+            stroke-linecap="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <circle cx="8.5" cy="8.5" r="1.5" />
+            <polyline points="21 15 16 10 5 21" />
+          </svg>
+          <p style="font-family:'JetBrains Mono',monospace;font-size:12px">click refresh to load captures</p>
+        </div>
+      </div>
+
+      <!-- Logs label -->
+      <div class="flex items-center gap-3 pt-1">
+        <span class="text-muted uppercase"
+          style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:2px">System
+          Logs</span>
+        <span class="flex-1" style="height:1px;background:var(--bd)"></span>
+        <button onclick="openLogsModal()" class="text-muted flex items-center gap-1 transition hover:text-accent"
+          style="font-family:'JetBrains Mono',monospace;font-size:11px">
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+          </svg>Full Logs
+        </button>
+      </div>
+      <pre id="logbox" class="log-pre rounded-xl max-h-44 overflow-y-auto"
+        style="border:1px solid var(--bd)">no logs yet…</pre>
+
+      <!-- Footer row -->
+      <div class="flex items-center justify-between pb-2 text-muted"
+        style="font-family:'JetBrains Mono',monospace;font-size:10px">
+        <span id="last-refresh">last refresh: —</span>
+        <button onclick="fetchStatus()"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition hover:text-accent"
+          style="border:1px solid var(--bd2);background:var(--s2)">
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round">
+            <polyline points="23 4 23 10 17 10" />
+            <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
+          </svg>Refresh Status
+        </button>
+      </div>
+    </main>
+
+    <!-- ─────────── SIDEBAR ─────────── -->
+    <aside id="sidebar" class="w-full xl:w-80 shrink-0 p-4 md:p-5 flex-col gap-5 hidden xl:flex"
+      style="border-left:1px solid var(--bd);border-top:1px solid var(--bd);background:var(--surface)">
+
+      <!-- Camera Status -->
+      <div>
+        <div class="flex items-center gap-2 mb-3">
+          <span class="text-muted uppercase"
+            style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:2px">Camera
+            Status</span>
+          <span class="flex-1" style="height:1px;background:var(--bd)"></span>
+        </div>
+        <div class="rounded-xl overflow-hidden" style="border:1px solid var(--bd);background:var(--s2)">
+          <div class="flex items-center justify-between px-4 py-3" style="border-bottom:1px solid var(--bd)">
+            <span class="text-muted" style="font-family:'JetBrains Mono',monospace;font-size:12px">Running</span>
+            <span id="c-running" class="font-bold text-muted"
+              style="font-family:'JetBrains Mono',monospace;font-size:12px">—</span>
+          </div>
+          <div class="flex items-center justify-between px-4 py-3" style="border-bottom:1px solid var(--bd)">
+            <span class="text-muted" style="font-family:'JetBrains Mono',monospace;font-size:12px">Priority</span>
+            <span id="c-priority" class="font-bold text-tx"
+              style="font-family:'JetBrains Mono',monospace;font-size:12px">—</span>
+          </div>
+          <div class="flex items-center justify-between px-4 py-3">
+            <span class="text-muted" style="font-family:'JetBrains Mono',monospace;font-size:12px">Held by</span>
+            <span id="c-user" class="font-bold text-info"
+              style="font-family:'JetBrains Mono',monospace;font-size:12px">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div>
+        <div class="flex items-center gap-2 mb-3">
+          <span class="text-muted uppercase"
+            style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:2px">Quick
+            Actions</span>
+          <span class="flex-1" style="height:1px;background:var(--bd)"></span>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="fetchStatus()" class="qa-btn qa-accent"><svg class="w-5 h-5" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+              <polyline points="23 4 23 10 17 10" />
+              <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
+            </svg><span>Refresh</span></button>
+          <button onclick="loadMedia()" class="qa-btn qa-info"><svg class="w-5 h-5" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <polyline points="21 15 16 10 5 21" />
+            </svg><span>Captures</span></button>
+          <button onclick="setSystem('on')" class="qa-btn qa-accent"><svg class="w-5 h-5" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg><span>Arm</span></button>
+          <button onclick="setSystem('off')" class="qa-btn qa-danger"><svg class="w-5 h-5" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="10" y1="15" x2="10" y2="9" />
+              <line x1="14" y1="15" x2="14" y2="9" />
+            </svg><span>Disarm</span></button>
+        </div>
+      </div>
+
+      <!-- Recent Events -->
+      <div class="flex-1 flex flex-col min-h-0">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="text-muted uppercase"
+            style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:2px">Recent
+            Events</span>
+          <span class="flex-1" style="height:1px;background:var(--bd)"></span>
+          <span id="event-count" class="text-muted px-2 py-0.5 rounded-full"
+            style="font-family:'JetBrains Mono',monospace;font-size:10px;border:1px solid var(--bd);background:var(--s2)">0</span>
+        </div>
+        <div id="eventlist" class="flex flex-col gap-1.5 overflow-y-auto max-h-64 xl:max-h-none flex-1">
+          <div class="text-center py-8 text-muted" style="font-family:'JetBrains Mono',monospace;font-size:11px">no
+            events yet</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+     FOOTER
+════════════════════════════════════════ -->
+  <footer class="flex items-center justify-between px-4 md:px-6 text-muted"
+    style="height:2.5rem;background:var(--surface);border-top:1px solid var(--bd);font-family:'JetBrains Mono',monospace;font-size:10px">
+    <div class="flex items-center gap-3">
+      <span class="text-accent px-2 py-0.5 rounded"
+        style="border:1px solid color-mix(in srgb,var(--accent) 20%,transparent);font-size:9px;letter-spacing:.05em">v2.0</span>
+      <span class="hidden sm:inline">EdgeGuard — Edge-IoT Security</span>
+    </div>
+    <span id="footer-ts">—</span>
+  </footer>
+
+  <!-- ═══════════════════════════════════════
+     SCRIPTS
+════════════════════════════════════════ -->
+  <script>
+    const $ = id => document.getElementById(id);
+
+    /* ── THEME ── */
+    let isDark = true;
+    function applyTheme(dark) {
+      isDark = dark;
+      document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+      $('icon-dark').classList.toggle('hidden', !dark);
+      $('icon-light').classList.toggle('hidden', dark);
+      localStorage.setItem('eg-theme', dark ? 'dark' : 'light');
+    }
+    function toggleTheme() { applyTheme(!isDark); }
+    // restore saved preference
+    (function () {
+      const saved = localStorage.getItem('eg-theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      applyTheme(saved ? saved === 'dark' : prefersDark);
+    })();
+
+    /* ── CLOCK ── */
+    function tick() {
+      const t = new Date().toLocaleTimeString('en-GB', { hour12: false });
+      $('clock').textContent = t;
+      $('streamtime').textContent = t;
+    }
+    setInterval(tick, 1000); tick();
+
+    /* ── MOBILE SIDEBAR ── */
+    function toggleSidebar() {
+      const sb = $('sidebar');
+      const hidden = sb.classList.contains('hidden');
+      sb.classList.toggle('hidden', !hidden);
+      sb.classList.toggle('flex', hidden);
+    }
+
+    /* ── EVENTS ── */
+    const events = [];
+    function addEvent(type, msg) {
+      events.unshift({ type, msg, t: new Date().toLocaleTimeString('en-GB', { hour12: false }) });
+      if (events.length > 40) events.pop();
+      renderEvents();
+    }
+    function renderEvents() {
+      $('event-count').textContent = events.length;
+      const el = $('eventlist');
+      if (!events.length) {
+        el.innerHTML = `<div class="text-center py-8 text-muted" style="font-family:'JetBrains Mono',monospace;font-size:11px">no events yet</div>`;
+        return;
+      }
+      el.innerHTML = events.map(e => `
+    <div class="flex gap-2.5 items-start p-3 rounded-xl ev-${e.type} anim-fadein" style="border:1px solid transparent">
+      <span class="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0 dot-${e.type}"></span>
+      <div class="flex-1 min-w-0">
+        <div class="text-tx" style="font-size:12px;line-height:1.4">${e.msg}</div>
+        <div class="text-muted mt-0.5" style="font-family:'JetBrains Mono',monospace;font-size:10px">${e.t}</div>
+      </div>
+    </div>`).join('');
+    }
+
+    /* ── STATUS ── */
+    async function fetchStatus() {
+      try {
+        const [sr, cr] = await Promise.all([fetch('/status'), fetch('/camera/priority')]);
+        const s = await sr.json(), c = await cr.json();
+        applyUI({ ...s, ...c, system_on: s.system === 'ON' });
+        const ts = new Date().toLocaleTimeString('en-GB', { hour12: false });
+        $('last-refresh').textContent = 'last refresh: ' + ts;
+        $('footer-ts').textContent = ts;
+      } catch {
+        $('syslabel').textContent = 'offline';
+        $('sysdot').style.background = 'var(--danger)';
+      }
+    }
+    function applyUI(d) {
+      const on = d.system_on, cam = d.camera_running;
+
+      $('sysdot').style.background = on ? 'var(--accent)' : 'var(--danger)';
+      if (on) { $('sysdot').classList.add('anim-pulse'); } else { $('sysdot').classList.remove('anim-pulse'); }
+      $('syslabel').textContent = on ? 'armed' : 'disarmed';
+
+      $('s-system').textContent = d.system || '—';
+      $('s-system').style.color = on ? 'var(--accent)' : 'var(--danger)';
+      $('ul-system').style.background = on ? 'var(--accent)' : 'var(--danger)';
+
+      $('s-camera').textContent = cam ? 'active' : 'idle';
+      $('s-camera').style.color = cam ? 'var(--accent)' : 'var(--muted)';
+      $('ul-camera').style.background = cam ? 'var(--accent)' : 'transparent';
+
+      $('s-user').textContent = d.current_user || 'none';
+      $('s-priority').textContent = d.current_priority || '0';
+
+      $('c-running').textContent = cam ? 'yes' : 'no';
+      $('c-running').style.color = cam ? 'var(--accent)' : 'var(--danger)';
+      $('c-priority').textContent = d.current_priority || '0';
+      $('c-user').textContent = d.current_user || 'none';
+
+      // arm buttons
+      const armBase = 'flex items-center justify-center gap-2 rounded-xl transition';
+      const armStyle = `padding:.75rem;font-family:'JetBrains Mono',monospace;font-size:.875rem;font-weight:700;letter-spacing:.1em`;
+      $('btn-on').className = armBase;
+      $('btn-off').className = armBase;
+      if (on) {
+        $('btn-on').style.cssText = `${armStyle};border:1px solid color-mix(in srgb,var(--accent) 40%,transparent);background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent)`;
+        $('btn-off').style.cssText = `${armStyle};border:1px solid var(--bd2);background:var(--s2);color:var(--muted)`;
+      } else {
+        $('btn-on').style.cssText = `${armStyle};border:1px solid var(--bd2);background:var(--s2);color:var(--muted)`;
+        $('btn-off').style.cssText = `${armStyle};border:1px solid color-mix(in srgb,var(--danger) 40%,transparent);background:color-mix(in srgb,var(--danger) 12%,transparent);color:var(--danger)`;
+      }
+    }
+
+    /* ── ARM / DISARM ── */
+    async function setSystem(state) {
+      try {
+        await fetch(state === 'on' ? '/on' : '/off');
+        addEvent('ok', `system ${state === 'on' ? 'armed' : 'disarmed'}`);
+        fetchStatus();
+      } catch { addEvent('auth', 'failed to reach server'); }
+    }
+
+    /* ── LOGS ── */
+    let lastLog = '';
+    async function loadLogs() {
+      try {
+        const r = await fetch('/logs');
+        const t = await r.text();
+        if (t === lastLog) return;
+        lastLog = t;
+        $('logbox').textContent = t;
+      } catch { }
+    }
+
+    /* ── MEDIA ── */
+    let mediaCache = { images: [], videos: [] };
+    let currentTab = 'images';
+
+    async function loadMedia() {
+      const mc = $('media-container');
+      mc.innerHTML = `<div class="col-span-full flex items-center justify-center py-12 gap-2 text-muted" style="font-family:'JetBrains Mono',monospace;font-size:12px">
+    <svg class="w-4 h-4 anim-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg>loading…</div>`;
+      try {
+        const [ir, vr] = await Promise.all([fetch('/api/images'), fetch('/api/videos')]);
+        mediaCache.images = await ir.json();
+        mediaCache.videos = await vr.json();
+        renderMedia();
+      } catch {
+        mc.innerHTML = `<div class="col-span-full text-center py-10 text-danger" style="font-family:'JetBrains Mono',monospace;font-size:12px">failed to load captures</div>`;
+      }
+    }
+    function switchTab(tab, btn) {
+      currentTab = tab;
+      document.querySelectorAll('[data-tab]').forEach(el => {
+        el.className = 'flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg transition tab-inactive';
+        el.style.fontFamily = "'JetBrains Mono',monospace"; el.style.fontSize = '12px'; el.style.fontWeight = '700'; el.style.letterSpacing = '.05em';
+      });
+      if (btn) { btn.className = 'flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg transition tab-active'; }
+      renderMedia();
+    }
+    function renderMedia() {
+      const mc = $('media-container');
+      const data = mediaCache[currentTab];
+      if (!data || !data.length) {
+        mc.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center py-12 gap-3 text-muted">
+      <svg class="w-10 h-10 opacity-25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      <p style="font-family:'JetBrains Mono',monospace;font-size:12px">no captures found</p></div>`;
+        return;
+      }
+      mc.innerHTML = '';
+      const frag = document.createDocumentFragment();
+      data.forEach((item, i) => {
+        const div = document.createElement('div');
+        div.className = 'media-card relative rounded-xl overflow-hidden anim-fadein';
+        div.style.cssText = `aspect-ratio:16/9;border:1px solid var(--bd2);background:var(--s2);animation-delay:${i * 40}ms`;
+        if (currentTab === 'images') {
+          div.style.cursor = 'pointer';
+          div.innerHTML = `
+        <img src="/image/${item}" loading="lazy" class="w-full h-full object-cover">
+        <div class="zoom-hint absolute inset-0 flex items-center justify-center" style="background:rgba(0,0,0,.3)">
+          <div style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:.75rem;padding:.625rem">
+            <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+          </div>
+        </div>
+        <div class="absolute bottom-1.5 left-1.5 text-white/70" style="background:rgba(0,0,0,.6);padding:.2rem .45rem;border-radius:.375rem;font-family:'JetBrains Mono',monospace;font-size:9px">IMG · ${String(i + 1).padStart(2, '0')}</div>`;
+          div.addEventListener('click', () => openLightbox(i));
+        } else {
+          div.innerHTML = `
+        <video preload="metadata" controls class="w-full h-full object-cover"><source src="/video_file/${item}" type="video/mp4"></video>
+        <div class="absolute bottom-1.5 left-1.5 text-white/70" style="background:rgba(0,0,0,.6);padding:.2rem .45rem;border-radius:.375rem;font-family:'JetBrains Mono',monospace;font-size:9px">VID · ${String(i + 1).padStart(2, '0')}</div>`;
+        }
+        frag.appendChild(div);
+      });
+      mc.appendChild(frag);
+    }
+
+    /* ── LIGHTBOX ── */
+    let lbIdx = 0;
+    function openLightbox(idx) {
+      lbIdx = idx; renderLightbox();
+      $('lightbox').classList.remove('hidden'); $('lightbox').classList.add('flex');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeLightbox() {
+      $('lightbox').classList.add('hidden'); $('lightbox').classList.remove('flex');
+      document.body.style.overflow = '';
+    }
+    function lightboxNav(dir) {
+      const imgs = mediaCache.images; if (!imgs.length) return;
+      lbIdx = (lbIdx + dir + imgs.length) % imgs.length; renderLightbox();
+    }
+    function renderLightbox() {
+      const imgs = mediaCache.images; if (!imgs.length) return;
+      const src = `/image/${imgs[lbIdx]}`;
+      $('lb-img').src = src;
+      $('lb-label').textContent = `${lbIdx + 1} / ${imgs.length}  ·  ${imgs[lbIdx]}`;
+      $('lb-dl').href = src;
+      const max = Math.min(imgs.length, 10);
+      $('lb-dots').innerHTML = Array.from({ length: max }, (_, i) =>
+        `<button onclick="lbIdx=${i};renderLightbox()" style="width:${i === lbIdx ? '12px' : '6px'};height:6px;border-radius:999px;background:${i === lbIdx ? 'var(--accent)' : 'rgba(255,255,255,.2)'};transition:all .2s;border:none;cursor:pointer"></button>`
+      ).join('');
+      const many = imgs.length > 1;
+      $('lb-prev').classList.toggle('hidden', !many);
+      $('lb-next').classList.toggle('hidden', !many);
+    }
+    $('lightbox').addEventListener('click', e => { if (e.target === $('lightbox')) closeLightbox(); });
+
+    /* ── LOGS MODAL ── */
+    let fullLogsRaw = '';
+    async function openLogsModal() {
+      $('logs-modal').classList.remove('hidden'); $('logs-modal').classList.add('flex');
+      document.body.style.overflow = 'hidden';
+      $('full-logbox').textContent = 'loading…'; $('logs-meta').textContent = 'fetching…'; $('log-search').value = '';
+      try {
+        const r = await fetch('/logs'); fullLogsRaw = await r.text();
+        applyLogFilter('');
+        $('logs-meta').textContent = `${fullLogsRaw.split('\n').length} lines · ${new Date().toLocaleTimeString('en-GB', { hour12: false })}`;
+      } catch { $('full-logbox').textContent = 'failed to load logs.'; $('logs-meta').textContent = 'error'; }
+    }
+    function closeLogsModal() {
+      $('logs-modal').classList.add('hidden'); $('logs-modal').classList.remove('flex');
+      document.body.style.overflow = '';
+    }
+    function filterLogs() { applyLogFilter($('log-search').value.trim()); }
+    function applyLogFilter(q) {
+      const lines = fullLogsRaw.split('\n');
+      const filtered = q ? lines.filter(l => l.toLowerCase().includes(q.toLowerCase())) : lines;
+      $('log-line-count').textContent = q ? `${filtered.length} / ${lines.length} lines` : `${lines.length} lines`;
+      if (q) {
+        $('full-logbox').innerHTML = filtered.map(l =>
+          l.replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'),
+            '<mark style="background:color-mix(in srgb,var(--accent) 25%,transparent);color:var(--accent);border-radius:2px">$1</mark>')
+        ).join('\n');
+      } else {
+        $('full-logbox').textContent = filtered.join('\n') || 'no matching lines.';
+      }
+    }
+    async function copyLogs() {
+      try {
+        await navigator.clipboard.writeText(fullLogsRaw);
+        const btn = $('copy-btn');
+        const orig = btn.innerHTML;
+        btn.innerHTML = `<svg class="w-3.5 h-3.5 text-accent" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+        setTimeout(() => { btn.innerHTML = orig; }, 1800);
+      } catch { }
+    }
+    $('logs-modal').addEventListener('click', e => { if (e.target === $('logs-modal')) closeLogsModal(); });
+
+    /* ── KEYBOARD ── */
+    document.addEventListener('keydown', e => {
+      if ($('logs-modal').classList.contains('flex') && e.key === 'Escape') { closeLogsModal(); return; }
+      if (!$('lightbox').classList.contains('flex')) return;
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft') lightboxNav(-1);
+      if (e.key === 'ArrowRight') lightboxNav(1);
+    });
+
+    /* ── WEBSOCKET ── */
+    function initWS() {
+      const ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws`);
+      ws.onmessage = e => {
+        const msg = JSON.parse(e.data);
+        if (msg.type === 'status') applyUI({ ...msg.data, system_on: msg.data.system === 'ON' });
+        if (msg.type === 'heartbeat') {
+          const c = msg.data;
+          $('c-running').textContent = c.camera_running ? 'yes' : 'no';
+          $('c-running').style.color = c.camera_running ? 'var(--accent)' : 'var(--danger)';
+          $('c-priority').textContent = c.priority || '0';
+          $('c-user').textContent = c.current_user || 'none';
+        }
+      };
+      ws.onclose = () => setTimeout(initWS, 2000);
+      setInterval(() => ws.readyState === 1 && ws.send('ping'), 2000);
+    }
+    initWS();
+
+    /* ── WEBRTC ── */
+    const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    let streamMode = isMobile ? 'mjpeg' : 'webrtc';
+    let activePC = null;
+    let webrtcStartedAt = 0;
+    let webrtcHasTrack = false;
+    let audioEnabled = false;
+    let audioVolume = parseFloat(localStorage.getItem('eg-audio-vol') || '0.6');
+
+    function updateStreamModeUI() {
+      const label = $('stream-mode');
+      const toggle = $('stream-toggle');
+      const audioBtn = $('audio-toggle');
+      const audioVol = $('audio-volume');
+      const audioLabel = $('audio-vol-label');
+      label.textContent = streamMode === 'mjpeg' ? 'MJPEG' : 'WebRTC';
+      label.style.color = streamMode === 'mjpeg' ? 'var(--info)' : 'var(--accent)';
+      label.style.borderColor = streamMode === 'mjpeg'
+        ? 'color-mix(in srgb,var(--info) 20%,transparent)'
+        : 'color-mix(in srgb,var(--accent) 20%,transparent)';
+      toggle.textContent = streamMode === 'mjpeg' ? 'WebRTC' : 'MJPEG';
+      const audioDisabled = streamMode !== 'webrtc';
+      audioBtn.style.opacity = audioDisabled ? '0.5' : '1';
+      audioBtn.style.pointerEvents = audioDisabled ? 'none' : 'auto';
+      audioVol.disabled = audioDisabled;
+      audioLabel.style.opacity = audioDisabled ? '0.5' : '1';
+    }
+
+    function setAudioVolume(value) {
+      audioVolume = Math.max(0, Math.min(1, value));
+      $('audio-volume').value = audioVolume;
+      $('audio-vol-label').textContent = `${Math.round(audioVolume * 100)}%`;
+      localStorage.setItem('eg-audio-vol', audioVolume.toString());
+      if (audioEnabled) {
+        const v = $('live');
+        v.volume = audioVolume;
+      }
+    }
+
+    function stopWebRTC() {
+      if (activePC) {
+        activePC.ontrack = null;
+        activePC.oniceconnectionstatechange = null;
+        activePC.onconnectionstatechange = null;
+        activePC.onicecandidateerror = null;
+        activePC.close();
+        activePC = null;
+      }
+      const v = $('live');
+      if (v.srcObject) v.srcObject = null;
+      v.muted = true;
+      audioEnabled = false;
+      $('audio-toggle').textContent = 'Audio';
+      $('audio-toggle').style.color = 'var(--muted)';
+    }
+
+    function showMjpegFallback(reason) {
+      streamMode = 'mjpeg';
+      updateStreamModeUI();
+      stopWebRTC();
+      const v = $('live');
+      const img = $('live-mjpeg');
+      if (!img.src) img.src = `/video?ts=${Date.now()}`;
+      v.classList.add('hidden');
+      img.classList.remove('hidden');
+      $('stream-ph').style.display = 'none';
+      addEvent('auth', reason || 'mjpeg fallback');
+    }
+
+    function startMjpeg() {
+      streamMode = 'mjpeg';
+      updateStreamModeUI();
+      showMjpegFallback('mjpeg mode');
+    }
+
+    function toggleStreamMode() {
+      if (streamMode === 'mjpeg') {
+        streamMode = 'webrtc';
+        updateStreamModeUI();
+        const img = $('live-mjpeg');
+        img.classList.add('hidden');
+        img.src = '';
+        $('live').classList.remove('hidden');
+        $('stream-ph').style.display = '';
+        webrtcHasTrack = false;
+        startWebRTC();
+      } else {
+        startMjpeg();
+      }
+    }
+
+    function toggleAudio() {
+      if (streamMode !== 'webrtc') {
+        addEvent('auth', 'audio needs WebRTC');
+        return;
+      }
+      const v = $('live');
+      audioEnabled = !audioEnabled;
+      v.muted = !audioEnabled;
+      v.volume = audioVolume;
+      $('audio-toggle').textContent = audioEnabled ? 'Mute' : 'Audio';
+      $('audio-toggle').style.color = audioEnabled ? 'var(--info)' : 'var(--muted)';
+    }
+
+    async function startWebRTC() {
+      try {
+        if (streamMode !== 'webrtc') return;
+        const pc = new RTCPeerConnection({
+          iceServers: [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+            { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
+            { urls: 'turns:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
+          ]
+        });
+        stopWebRTC();
+        activePC = pc;
+        pc.addTransceiver('video', { direction: 'recvonly' });
+        pc.addTransceiver('audio', { direction: 'recvonly' });
+        pc.ontrack = e => {
+          webrtcHasTrack = true;
+          const v = $('live');
+          v.srcObject = e.streams[0];
+          v.muted = true;
+          v.play().catch(() => addEvent('auth', 'tap video to start'));
+          $('stream-ph').style.display = 'none';
+        };
+        pc.oniceconnectionstatechange = () => {
+          addEvent('auth', `ice ${pc.iceConnectionState}`);
+          if (pc.iceConnectionState === 'failed') {
+            showMjpegFallback('ice failed → mjpeg');
+          }
+        };
+        pc.onconnectionstatechange = () => {
+          addEvent('auth', `pc ${pc.connectionState}`);
+        };
+        pc.onicecandidateerror = e => {
+          addEvent('auth', `ice error: ${e.errorText || e.errorCode || 'unknown'}`);
+        };
+        webrtcStartedAt = Date.now();
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        const res = await fetch('/offer', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sdp: pc.localDescription.sdp, type: pc.localDescription.type }) });
+        if (!res.ok) throw new Error('offer failed');
+        await pc.setRemoteDescription(await res.json());
+
+        setTimeout(() => {
+          if (!webrtcHasTrack && Date.now() - webrtcStartedAt >= 10000) {
+            showMjpegFallback('webrtc timeout → mjpeg');
+          }
+        }, 10000);
+      } catch { addEvent('auth', 'WebRTC connection failed'); }
+    }
+    setAudioVolume(audioVolume);
+    updateStreamModeUI();
+    if (streamMode === 'mjpeg') {
+      startMjpeg();
+    } else {
+      startWebRTC();
+    }
+
+    $('audio-volume').addEventListener('input', () => {
+      setAudioVolume(parseFloat($('audio-volume').value));
+    });
+
+    /* ── DEMO EVENTS ── */
+    addEvent('ok', 'dashboard connected');
+    addEvent('motion', 'motion detected – front door');
+    addEvent('auth', 'priority lock by admin');
+    addEvent('ok', 'camera stream started');
+
+    /* ── INIT ── */
+    fetchStatus();
+    loadLogs();
+  </script>
+</body>
+
+</html>
